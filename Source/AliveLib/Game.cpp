@@ -602,12 +602,29 @@ void CheatController::ctor_421BD0()
 
 EXPORT void CC Game_Init_LoadingIcon_482CD0()
 {
-    NOT_IMPLEMENTED();
+    BYTE **pResource;
+    
+    pResource = ResourceManager::GetLoadedResource_49C2A0(ResourceManager::ResourceType::Resource_Animation, 8010, 0, 0);
+
+    if (!pResource)
+    {
+        ResourceManager::LoadResourceFile_49C170("LOADING.BAN", 0);
+        pResource = ResourceManager::GetLoadedResource_49C2A0(ResourceManager::ResourceType::Resource_Animation, 8010, 1u, 0);
+    }
+
+    ResourceManager::Set_Header_Flags_49C650(pResource, ResourceManager::ResourceHeaderFlags::eNeverFree);
 }
 
 EXPORT void CC Game_Free_LoadingIcon_482D40()
 {
-    NOT_IMPLEMENTED();
+    BYTE **pResource;
+
+    pResource = ResourceManager::GetLoadedResource_49C2A0(ResourceManager::ResourceType::Resource_Animation, 8010, 0, 0);
+
+    if (pResource)
+    {
+        ResourceManager::FreeResource_49C330(pResource);
+    }
 }
 
 class Collisions
