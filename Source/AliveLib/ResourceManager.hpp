@@ -9,6 +9,11 @@ class Camera;
 class ResourceManager : public BaseGameObject
 {
 public:
+    enum ResourceId : DWORD
+    {
+        eLoading = 8010
+    };
+
     enum ResourceType : DWORD
     {
         Resource_VLC = 0x20434C56,
