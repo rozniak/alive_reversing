@@ -1161,10 +1161,99 @@ EXPORT int CC PSX_VSync_4F6170(int mode)
     }
 }
 
-EXPORT signed int CC PSX_ClearImage_4F5BD0(PSX_RECT* /*pRect*/, unsigned __int8 /*r*/, unsigned __int8 /*g*/, __int16 /*b*/)
+//dword_C215C4) | ((unsigned int)g >> 3 << dword_C1D180) | ((unsigned int)(unsigned __int8)b >> 3 << dword_C19140)
+ALIVE_VAR(1, 0xC215C0, DWORD, dword_C215C0, 0);
+ALIVE_VAR(1, 0xC215C4, DWORD, dword_C215C4, 0);
+ALIVE_VAR(1, 0xC1D180, DWORD, dword_C1D180, 0);
+ALIVE_VAR(1, 0xC19140, DWORD, dword_C19140, 0);
+
+EXPORT signed int CC PSX_ClearImage_4F5BD0(PSX_RECT* pRect, unsigned __int8 r, unsigned __int8 g, __int16 b)
 {
-    NOT_IMPLEMENTED();
-    return 0;
+    //LOG_INFO("Clear image called!");
+    signed int rectX = pRect->x;
+    signed int rectY = pRect->y;
+    signed int rectEdgeH = pRect->w + pRect->x - 1;
+    signed int rectEdgeV = pRect->h + pRect->y - 1;
+    signed int tempRectY = pRect->y;
+    char* hLockedPixels; // Possibly/probably wrong
+    int ba;
+    int v9;
+    unsigned int v10;
+    int v11;
+    char* v12;
+    char* v15;
+    short pRectA = pRect->x;
+    PSX_RECT* pRectB;
+
+    if (!BMP_Lock_4F1FF0(&sPsxVram_C1D160))
+    {
+        return 0;
+    }
+
+    if (rectX >= 1024 || rectY >= 512 || rectEdgeH < 0 || rectEdgeV < 0)
+    {
+        return 0;
+    }
+
+    if (rectX < 0)
+    {
+        rectX = 0;
+    }
+    else if (rectX > 1023)
+    {
+        rectX = 1023;
+    }
+
+    if (rectY < 0)
+    {
+        rectY = 0;
+    }
+    else if (rectY > 511)
+    {
+        rectY = 511;
+    }
+
+    tempRectY = rectY;
+
+    if (rectEdgeH > 1023)
+    {
+        rectEdgeH = 1023;
+    }
+
+    if (rectEdgeV > 511)
+    {
+        rectEdgeV = 511;
+    }
+
+    hLockedPixels = (char*)sPsxVram_C1D160.field_4_pLockedPixels + 2 * (rectX + rectY * ((unsigned int)sPsxVram_C1D160.field_10_locked_pitch >> 1));
+    ba = (((1 << dword_C215C0) | ((unsigned int)r >> 3 << dword_C215C4) | ((unsigned int)g >> 3 << dword_C1D180) | ((unsigned int)(unsigned __int8)b >> 3 << dword_C19140)) << 16) | (1 << dword_C215C0) | ((unsigned int)r >> 3 << dword_C215C4) | ((unsigned int)g >> 3 << dword_C1D180) | ((unsigned int)(unsigned __int8)b >> 3 << dword_C19140);
+    v9 = tempRectY - rectEdgeV;
+    pRectB = (PSX_RECT*)(rectEdgeH - pRectA + 1);
+
+    if (v9 >= 0)
+    {
+        v10 = 2 * ((unsigned int)sPsxVram_C1D160.field_10_locked_pitch >> 1);
+        v11 = v9 + 1;
+
+        do
+        {
+            memset(hLockedPixels, ba, (unsigned int)pRectB >> 1);
+            v12 = &hLockedPixels[4 * ((unsigned int)pRectB >> 1)];
+
+            for (int i = (unsigned __int8)pRectB & 1; i; --i)
+            {
+                *(WORD *)v12 = ba;
+                v12 += 2;
+            }
+
+            --v11;
+            v15 += v10;
+        } while (v11);
+    }
+
+    BMP_unlock_4F2100(&sPsxVram_C1D160);
+
+    return 1;
 }
 
 EXPORT int CC PSX_DrawSync_4F6280(int /*mode*/)
